@@ -72,10 +72,16 @@ def processar_e_salvar_gasto(texto: str) -> str:
 
 async def tratar_mensagem_telegram(update: Update, context: ContextTypes.DEFAULT_TYPE):
     texto = update.message.text
-    print(f"📩 Mensagem recebida: '{texto}'", flush=True)
-    resposta = await asyncio.to_thread(processar_e_salvar_gasto, texto)
-    await update.message.reply_text(resposta, parse_mode="Markdown")
-
+    print(f"📩 Mensagem recebida no Telegram: '{texto}'", flush=True)
+    
+    try:
+        # Executa o Gemini e o Banco em uma thread separada para não travar o loop assíncrono
+        resposta = await asyncio.to_thread(processar_e_salvar_gasto, texto)
+        await update.message.reply_text(resposta, parse_mode="Markdown")
+        print("✅ Resposta enviada ao usuário no Telegram!", flush=True)
+    except Exception as e:
+        print(f"❌ ERRO NO HANDLER DO TELEGRAM: {e}", flush=True)
+        await update.message.reply_text("❌ Ocorreu um erro interno ao processar a mensagem.")
 
 # --- Ciclo de Vida do FastAPI (Com flush=True) ---
 @asynccontextmanager
